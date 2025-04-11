@@ -3,58 +3,46 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"time"
+	"net/http"
+	"github.com/gorilla/mux"
 )
 
-func animation(retraso time.Duration){
-	for {
-		for _, r := range `\|/-`{
-			fmt.Printf("\r%c", r)
-			time.Sleep(retraso)
-		}
-	}
+func GetUsers(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Get Users")
 }
 
-func home (w http.ResponseWriter, r *http.Request){
-	fmt.Println("Request received from home")
-	fmt.Fprintf(w, "<h1>hola mundo</h1>")
+func PostUsers(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Get Users")
 }
 
-func test (w http.ResponseWriter, r *http.Request){
-	fmt.Println("Request received from test")
-	fmt.Fprintf(w, "<h1>hola mundo from test</h1>")
+func PutUsers(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Get Users")
 }
 
-type mensaje struct {
-	msg string
+func DeleteUsers(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Get Users")
 
 }
 
-func (m mensaje) ServeHTTP (w http.ResponseWriter, r *http.Request){
-	fmt.Fprint(w, m.msg)
-}
 
 func main (){
+	r := mux.NewRouter().StrictSlash(false)
 
-	mux := http.NewServeMux()
-	var msg mensaje = mensaje{"hola mundo"}
-	fs := http.FileServer(http.Dir("public"))
-
-	mux.Handle("/", fs)
-	mux.HandleFunc("/test", test)
-	mux.Handle("/hola", msg)
-
+	// user CRUD
+	r.HandleFunc("api/user", GetUsers).Methods("GET")
+	r.HandleFunc("api/user", PostUsers).Methods("POST")
+	r.HandleFunc("api/user", PutUsers).Methods("PUT")
+	r.HandleFunc("api/user", DeleteUsers).Methods("DELETE")
 
 	server := &http.Server{
-		Addr: ":8080",
-		Handler: mux,
-		ReadTimeout: 10 * time.Second,
+		Addr: "8000",
+		Handler: r,
+		ReadTimeout:10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-
-	log.Println("Listening ...")
-	log.Fatal(server.ListenAndServe())
+	log.Println("Listening...")
+	server.ListenAndServe()
 
 }
